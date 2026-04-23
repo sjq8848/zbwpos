@@ -30,38 +30,22 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Debug project
-        shell: cmd
-        run: |
-          echo "=== qmake version ==="
-          qmake -v
-          echo.
-          echo "=== Project structure ==="
-          dir /b
-          echo.
-          echo "=== Running qmake ==="
-          qmake zbwpos.pro CONFIG+=release 2>&1
-
       - name: Build
         shell: cmd
         run: |
-          echo "=== Building ==="
+          echo "=== Building in src/app ==="
+          cd src\app
+          qmake app.pro CONFIG+=release
           nmake 2>&1
-          echo.
-          echo "=== Build output ==="
+          echo "=== Output ==="
           dir /s /b *.exe 2>nul
-          echo.
-          echo "=== Build directory structure ==="
-          dir build 2>nul || echo "No build dir"
-          dir build\src 2>nul || echo "No build\src dir"
-          dir build\src\app 2>nul || echo "No build\src\app dir"
 
       - name: Deploy
         if: success()
         shell: cmd
         run: |
           mkdir install\bin
-          copy build\src\app\release\zbwpos.exe install\bin\
+          copy src\app\release\zbwpos.exe install\bin\
           cd install\bin
           windeployqt --release --no-translations zbwpos.exe
 
@@ -91,31 +75,21 @@ jobs:
           arch: 'clang_64'
           cache: true
 
-      - name: Debug project
-        run: |
-          echo "=== qmake version ==="
-          qmake -v
-          echo "=== Project structure ==="
-          ls -la
-          echo "=== Running qmake ==="
-          qmake zbwpos.pro CONFIG+=release 2>&1 || true
-          echo "=== Makefiles generated ==="
-          find . -name "Makefile" -type f
-
       - name: Build
         run: |
-          echo "=== Building ==="
-          make -j$(sysctl -n hw.ncpu) 2>&1 || true
-          echo "=== Build output ==="
-          find . -name "zbwpos" -type f 2>/dev/null || echo "No zbwpos binary found"
-          ls -la build/src/app/ 2>/dev/null || echo "No build/src/app dir"
+          echo "=== Building in src/app ==="
+          cd src/app
+          qmake app.pro CONFIG+=release
+          make -j$(sysctl -n hw.ncpu) 2>&1
+          echo "=== Output ==="
+          find . -name "*.app" -o -name "zbwpos" -type f
 
       - name: Create App Bundle
         if: success()
         run: |
           mkdir -p install/zbwpos.app/Contents/MacOS
-          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ || \
-          cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
+          cp src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ 2>/dev/null || \
+          cp src/app/zbwpos install/zbwpos.app/Contents/MacOS/
 
           cat > install/zbwpos.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -171,29 +145,20 @@ jobs:
           arch: 'gcc_64'
           cache: true
 
-      - name: Debug project
-        run: |
-          echo "=== qmake version ==="
-          qmake -v
-          echo "=== Project structure ==="
-          ls -la
-          echo "=== Running qmake ==="
-          qmake zbwpos.pro CONFIG+=release 2>&1 || true
-          echo "=== Makefiles generated ==="
-          find . -name "Makefile" -type f
-
       - name: Build
         run: |
-          echo "=== Building ==="
-          make -j$(nproc) 2>&1 || true
-          echo "=== Build output ==="
-          find . -name "zbwpos" -type f 2>/dev/null || echo "No zbwpos binary found"
+          echo "=== Building in src/app ==="
+          cd src/app
+          qmake app.pro CONFIG+=release
+          make -j$(nproc) 2>&1
+          echo "=== Output ==="
+          find . -name "zbwpos" -type f
 
       - name: Create Package
         if: success()
         run: |
           mkdir -p install/bin
-          cp build/src/app/zbwpos install/bin/
+          cp src/app/zbwpos install/bin/
           tar -czvf zbwpos-${{ env.APP_VERSION }}-linux-x64.tar.gz -C install bin
 
       - name: Upload Artifact

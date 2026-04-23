@@ -3,5 +3,25 @@
         <file>main.qml</file>
         <file alias="ProductManagePage.qml">../src/product/qml/ProductManagePage.qml</file>
         <file alias="MemberPage.qml">../src/member/qml/MemberPage.qml</file>
+        <file alias="CashierPage.qml">../src/cashier/qml/CashierPage.qml</file>
+        <file alias="styles/AppColors.qml">../src/cashier/qml/styles/AppColors.qml</file>
+        <file alias="styles/AppFonts.qml">../src/cashier/qml/styles/AppFonts.qml</file>
+        <file alias="styles/AppTheme.qml">../src/cashier/qml/styles/AppTheme.qml</file>
+        <file alias="components/TopStatusBar.qml">../src/cashier/qml/components/TopStatusBar.qml</file>
+        <file alias="components/CategoryTabBar.qml">../src/cashier/qml/components/CategoryTabBar.qml</file>
+        <file alias="components/ProductCard.qml">../src/cashier/qml/components/ProductCard.qml</file>
+        <file alias="components/ProductGrid.qml">../src/cashier/qml/components/ProductGrid.qml</file>
+        <file alias="components/NumberPad.qml">../src/cashier/qml/components/NumberPad.qml</file>
+        <file alias="components/BarcodeInput.qml">../src/cashier/qml/components/BarcodeInput.qml</file>
+        <file alias="components/CartItemDelegate.qml">../src/cashier/qml/components/CartItemDelegate.qml</file>
+        <file alias="components/CartPanel.qml">../src/cashier/qml/components/CartPanel.qml</file>
+        <file alias="components/MemberInfo.qml">../src/cashier/qml/components/MemberInfo.qml</file>
+        <file alias="components/ActionButtonBar.qml">../src/cashier/qml/components/ActionButtonBar.qml</file>
+        <file alias="dialogs/PaymentDialog.qml">../src/cashier/qml/dialogs/PaymentDialog.qml</file>
+        <file alias="dialogs/MemberSearchDialog.qml">../src/cashier/qml/dialogs/MemberSearchDialog.qml</file>
+        <file alias="dialogs/ProductSearchDialog.qml">../src/cashier/qml/dialogs/ProductSearchDialog.qml</file>
+        <file alias="dialogs/SuspendOrderDialog.qml">../src/cashier/qml/dialogs/SuspendOrderDialog.qml</file>
+        <file alias="dialogs/RefundDialog.qml">../src/cashier/qml/dialogs/RefundDialog.qml</file>
+        <file alias="dialogs/ShiftDialog.qml">../src/cashier/qml/dialogs/ShiftDialog.qml</file>
     </qresource>
 </RCC>

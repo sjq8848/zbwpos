@@ -27,11 +27,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.5.3'
+          version: '6.2.4'
           host: 'windows'
           target: 'desktop'
           arch: 'win64_msvc2019_64'
-          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
@@ -68,11 +67,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.5.3'
+          version: '6.2.4'
           host: 'mac'
           target: 'desktop'
           arch: 'clang_64'
-          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
@@ -86,7 +84,7 @@ jobs:
         run: |
           mkdir -p install/zbwpos.app/Contents/MacOS
           mkdir -p install/zbwpos.app/Contents/Resources
-          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ || cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
+          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ 2>/dev/null || cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
 
           cat > install/zbwpos.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -146,11 +144,10 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.5.3'
+          version: '6.2.4'
           host: 'linux'
           target: 'desktop'
           arch: 'gcc_64'
-          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
@@ -190,11 +187,10 @@ jobs:
       - name: Install Qt for Android
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.5.3'
+          version: '6.2.4'
           host: 'linux'
           target: 'android'
           arch: 'android_arm64_v8a'
-          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
@@ -211,8 +207,6 @@ jobs:
           cd ../android-build
           if [ -f gradlew ]; then
             ./gradlew assembleRelease
-          else
-            androiddeployqt --input android-libzbwpos.so-deployment-settings.json --output ../android-build --android-platform android-33 --gradle
           fi
         continue-on-error: true
 

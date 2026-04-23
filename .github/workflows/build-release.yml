@@ -30,35 +30,26 @@ jobs:
           arch: 'win64_msvc2019_64'
           cache: true
 
-      - name: Debug - check qmake
-        run: |
-          which qmake
-          qmake --version
-          echo "QTDIR=$QTDIR"
-          echo "Qt5_DIR=$Qt5_DIR"
-          echo "Qt6_DIR=$Qt6_DIR"
-          ls $Qt6_DIR 2>/dev/null || echo "Qt6_DIR not found"
-
       - name: Build
+        shell: cmd
         run: |
           mkdir build
           cd build
-          qmake ../zbwpos.pro CONFIG+=release 2>&1
-          nmake 2>&1
+          qmake ..\zbwpos.pro CONFIG+=release
+          nmake
 
       - name: Deploy
         if: success()
+        shell: cmd
         run: |
-          mkdir -p install/bin
-          cp build/src/app/zbwpos.exe install/bin/ 2>/dev/null || cp build/src/app/release/zbwpos.exe install/bin/ 2>/dev/null || echo "exe not found, listing build dir" && find build -name "*.exe"
-          cd install/bin
-          windeployqt --release --no-translations zbwpos.exe 2>&1
+          mkdir install\bin
+          copy build\src\app\release\zbwpos.exe install\bin\
+          cd install\bin
+          windeployqt --release --no-translations zbwpos.exe
 
       - name: Create ZIP
         if: success()
-        run: |
-          cd install
-          7z a -tzip ../zbwpos-${{ env.APP_VERSION }}-windows-x64.zip bin/*
+        run: 7z a -tzip zbwpos-${{ env.APP_VERSION }}-windows-x64.zip install\bin
 
       - name: Upload Artifact
         if: success()
@@ -84,19 +75,18 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build
+          mkdir -p build
           cd build
-          qmake ../zbwpos.pro CONFIG+=release 2>&1
-          make -j$(sysctl -n hw.ncpu) 2>&1
+          qmake ../zbwpos.pro CONFIG+=release
+          make -j$(sysctl -n hw.ncpu)
 
       - name: Create App Bundle
         if: success()
         run: |
           mkdir -p install/zbwpos.app/Contents/MacOS
           mkdir -p install/zbwpos.app/Contents/Resources
-          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ 2>/dev/null || \
-          cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/ 2>/dev/null || \
-          find build -name "zbwpos" -type f -exec cp {} install/zbwpos.app/Contents/MacOS/ \;
+          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ || \
+          cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
 
           cat > install/zbwpos.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -121,13 +111,11 @@ jobs:
 
       - name: Deploy
         if: success()
-        run: |
-          macdeployqt install/zbwpos.app -no-translations 2>&1
+        run: macdeployqt install/zbwpos.app -no-translations
 
       - name: Create DMG
         if: success()
-        run: |
-          hdiutil create -volname "ZBW POS" -srcfolder install/zbwpos.app -ov -format UDZW zbwpos-${{ env.APP_VERSION }}-macos.dmg
+        run: hdiutil create -volname "ZBW POS" -srcfolder install/zbwpos.app -ov -format UDZW zbwpos-${{ env.APP_VERSION }}-macos.dmg
 
       - name: Upload Artifact
         if: success()
@@ -167,16 +155,16 @@ jobs:
 
       - name: Build
         run: |
-          mkdir build
+          mkdir -p build
           cd build
-          qmake ../zbwpos.pro CONFIG+=release 2>&1
-          make -j$(nproc) 2>&1
+          qmake ../zbwpos.pro CONFIG+=release
+          make -j$(nproc)
 
       - name: Create Package
         if: success()
         run: |
           mkdir -p install/bin
-          cp build/src/app/zbwpos install/bin/ || find build -name "zbwpos" -type f -exec cp {} install/bin/ \;
+          cp build/src/app/zbwpos install/bin/
           tar -czvf zbwpos-${{ env.APP_VERSION }}-linux-x64.tar.gz -C install bin
 
       - name: Upload Artifact

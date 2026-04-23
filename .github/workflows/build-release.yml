@@ -18,9 +18,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -32,7 +29,10 @@ jobs:
 
       - name: Build
         shell: cmd
+        env:
+          PATH: ${{ env.IQTA_TOOLS }}/../../../msvc2019_64/bin;${{ env.PATH }}
         run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           mkdir build
           cd build
           qmake ..\zbwpos.pro CONFIG+=release
@@ -142,7 +142,8 @@ jobs:
             libxcb-keysyms1 \
             libxcb-randr0 \
             libxcb-render-util0 \
-            libxcb-shape0
+            libxcb-shape0 \
+            libx11-xcb-dev
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3

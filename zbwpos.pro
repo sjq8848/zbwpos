@@ -17,5 +17,7 @@ TEMPLATE = subdirs
 CONFIG += ordered
 
 SUBDIRS += \
-    src \
-    tests
+    src
+
+# tests are optional, build manually when needed
+# tests

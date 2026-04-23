@@ -23,3 +23,8 @@ SOURCES += \
 
 RESOURCES += \
     $$PWD/../../resources/qml.qrc
+
+DISTFILES += \
+    $$PWD/qml/main.qml \
+    $$PWD/qml/AppNavigation.qml \
+    $$PWD/qml/LoginPage.qml

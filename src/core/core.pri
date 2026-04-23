@@ -12,7 +12,16 @@ HEADERS += \
     $$PWD/network/endpoints/AuthApi.h \
     $$PWD/network/endpoints/ProductApi.h \
     $$PWD/network/endpoints/MemberApi.h \
-    $$PWD/network/endpoints/OrderApi.h
+    $$PWD/network/endpoints/OrderApi.h \
+    $$PWD/hardware/IHardwareDevice.h \
+    $$PWD/hardware/IBarcodeScanner.h \
+    $$PWD/hardware/IPrinter.h \
+    $$PWD/hardware/ICashDrawer.h \
+    $$PWD/hardware/ICustomerDisplay.h \
+    $$PWD/hardware/HardwareManager.h \
+    $$PWD/hardware/DeviceFactory.h \
+    $$PWD/hardware/BarcodeFilter.h \
+    $$PWD/hardware/PrinterEscPos.h
 
 SOURCES += \
     $$PWD/database/DatabaseManager.cpp \
@@ -24,4 +33,8 @@ SOURCES += \
     $$PWD/network/endpoints/AuthApi.cpp \
     $$PWD/network/endpoints/ProductApi.cpp \
     $$PWD/network/endpoints/MemberApi.cpp \
-    $$PWD/network/endpoints/OrderApi.cpp
+    $$PWD/network/endpoints/OrderApi.cpp \
+    $$PWD/hardware/HardwareManager.cpp \
+    $$PWD/hardware/DeviceFactory.cpp \
+    $$PWD/hardware/BarcodeFilter.cpp \
+    $$PWD/hardware/PrinterEscPos.cpp

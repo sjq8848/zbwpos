@@ -27,31 +27,26 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '5.15.2'
+          version: '6.5.3'
           host: 'windows'
           target: 'desktop'
           arch: 'win64_msvc2019_64'
+          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
         run: |
           mkdir build
           cd build
-          qmake ../zbwpos.pro -spec win32-msvc CONFIG+=release
+          qmake ../zbwpos.pro CONFIG+=release
           nmake
 
       - name: Deploy
         run: |
           mkdir -p install/bin
-          cp build/src/app/release/zbwpos.exe install/bin/
+          cp build/src/app/zbwpos.exe install/bin/
           cd install/bin
           windeployqt --release --no-translations zbwpos.exe
-
-      - name: Create Installer
-        run: |
-          choco install nsis -y
-          makensis /DVERSION=${{ env.APP_VERSION }} scripts/installer-windows.nsi
-        continue-on-error: true
 
       - name: Create ZIP
         run: |
@@ -62,9 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: |
-            package/*.exe
-            zbwpos-*-windows-x64.zip
+          path: zbwpos-*-windows-x64.zip
 
   build-macos:
     runs-on: macos-latest
@@ -75,24 +68,25 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '5.15.2'
+          version: '6.5.3'
           host: 'mac'
           target: 'desktop'
           arch: 'clang_64'
+          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
         run: |
           mkdir build
           cd build
-          qmake ../zbwpos.pro -spec macx-clang CONFIG+=release
+          qmake ../zbwpos.pro CONFIG+=release
           make -j$(sysctl -n hw.ncpu)
 
       - name: Create App Bundle
         run: |
           mkdir -p install/zbwpos.app/Contents/MacOS
           mkdir -p install/zbwpos.app/Contents/Resources
-          cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
+          cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ || cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
 
           cat > install/zbwpos.app/Contents/Info.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -139,20 +133,31 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            qt5-default \
-            qtbase5-dev \
-            qtchooser \
-            qt5-qmake \
-            qtbase5-dev-tools \
-            libqt5sql5-sqlite \
-            libqt5network5 \
-            libgl1-mesa-dev
+            libgl1-mesa-dev \
+            libxcb-xinerama0 \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-shape0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.3'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          modules: 'qtsql qtnetworkauth'
+          cache: true
 
       - name: Build
         run: |
           mkdir build
           cd build
-          qmake ../zbwpos.pro -spec linux-g++ CONFIG+=release
+          qmake ../zbwpos.pro CONFIG+=release
           make -j$(nproc)
 
       - name: Create Package
@@ -185,18 +190,18 @@ jobs:
       - name: Install Qt for Android
         uses: jurplel/install-qt-action@v3
         with:
-          version: '5.15.2'
+          version: '6.5.3'
           host: 'linux'
           target: 'android'
           arch: 'android_arm64_v8a'
+          modules: 'qtsql qtnetworkauth'
           cache: true
 
       - name: Build
         run: |
           mkdir build
           cd build
-          qmake ../zbwpos.pro -spec android-clang CONFIG+=release ANDROID_ABIS="arm64-v8a"
-          make -j$(nproc) qmake_all
+          qmake ../zbwpos.pro CONFIG+=release ANDROID_ABIS="arm64-v8a"
           make -j$(nproc)
 
       - name: Build APK
@@ -204,7 +209,11 @@ jobs:
           cd build
           make INSTALL_ROOT=../android-build install
           cd ../android-build
-          ./gradlew assembleRelease
+          if [ -f gradlew ]; then
+            ./gradlew assembleRelease
+          else
+            androiddeployqt --input android-libzbwpos.so-deployment-settings.json --output ../android-build --android-platform android-33 --gradle
+          fi
         continue-on-error: true
 
       - name: Upload Artifact
@@ -212,8 +221,8 @@ jobs:
         with:
           name: android-build
           path: |
-            build/android-build/build/outputs/apk/**/*.apk
             **/*.apk
+            build/android-build/build/outputs/apk/**/*.apk
         continue-on-error: true
 
   release:

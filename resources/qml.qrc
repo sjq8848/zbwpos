@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file alias="ProductManagePage.qml">../src/product/qml/ProductManagePage.qml</file>
     </qresource>
 </RCC>

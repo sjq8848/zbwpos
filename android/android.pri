@@ -1,0 +1,18 @@
+android {
+    QT += androidextras
+    ANDROID_PACKAGE_SOURCE_DIR = $$PWD
+
+    equals(QT_MAJOR_VERSION, 5) {
+        ANDROID_MIN_SDK_VERSION = 21
+        ANDROID_TARGET_SDK_VERSION = 28
+    }
+    equals(QT_MAJOR_VERSION, 6) {
+        ANDROID_MIN_SDK_VERSION = 23
+        ANDROID_TARGET_SDK_VERSION = 33
+    }
+
+    DEFINES += ZBW_PLATFORM_ANDROID
+}
+!android {
+    DEFINES += ZBW_PLATFORM_DESKTOP
+}

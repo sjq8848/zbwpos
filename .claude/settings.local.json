@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(superpowers-agent --help)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat: project skeleton with Qt5/Qt6 dual build system *)"
+    ]
+  }
+}

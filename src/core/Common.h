@@ -1,5 +1,7 @@
 #pragma once
 #include <QString>
+#include <QDateTime>
+#include <QVariant>
 #include "QtCompat.h"
 
 namespace ZBW {
@@ -12,10 +14,10 @@ constexpr int ORDER_NORMAL = 1;
 constexpr int ORDER_REFUND = 2;
 constexpr int ORDER_CANCEL = 3;
 
-const QString PAY_CASH = QStringLiteral("cash");
-const QString PAY_CARD = QStringLiteral("card");
-const QString PAY_WECHAT = QStringLiteral("wechat");
-const QString PAY_ALIPAY = QStringLiteral("alipay");
-const QString PAY_MEMBER_BALANCE = QStringLiteral("member_balance");
+inline const QString PAY_CASH = QStringLiteral("cash");
+inline const QString PAY_CARD = QStringLiteral("card");
+inline const QString PAY_WECHAT = QStringLiteral("wechat");
+inline const QString PAY_ALIPAY = QStringLiteral("alipay");
+inline const QString PAY_MEMBER_BALANCE = QStringLiteral("member_balance");
 
 } // namespace ZBW

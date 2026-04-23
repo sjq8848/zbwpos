@@ -5,6 +5,7 @@ include(../core/core.pri)
 include(../cashier/cashier.pri)
 include(../product/product.pri)
 include(../member/member.pri)
+include(../../android/android.pri)
 
 TARGET = zbwpos
 TEMPLATE = app

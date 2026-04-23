@@ -1,5 +1,5 @@
 android {
-    QT += androidextras
+    equals(QT_MAJOR_VERSION, 5): QT += androidextras
     ANDROID_PACKAGE_SOURCE_DIR = $$PWD
 
     equals(QT_MAJOR_VERSION, 5) {

@@ -12,117 +12,6 @@ env:
   APP_VERSION: '1.0.0'
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.2.4'
-          host: 'windows'
-          target: 'desktop'
-          arch: 'win64_msvc2019_64'
-          cache: true
-
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Build
-        shell: cmd
-        run: |
-          echo "=== Building in src/app ==="
-          cd src\app
-          qmake app.pro CONFIG+=release
-          nmake 2>&1
-          echo "=== Output ==="
-          dir /s /b *.exe 2>nul
-
-      - name: Deploy
-        if: success()
-        shell: cmd
-        run: |
-          mkdir install\bin
-          copy src\app\release\zbwpos.exe install\bin\
-          cd install\bin
-          windeployqt --release --no-translations zbwpos.exe
-
-      - name: Create ZIP
-        if: success()
-        run: 7z a -tzip zbwpos-${{ env.APP_VERSION }}-windows-x64.zip install\bin
-
-      - name: Upload Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: zbwpos-*-windows-x64.zip
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.2.4'
-          host: 'mac'
-          target: 'desktop'
-          arch: 'clang_64'
-          cache: true
-
-      - name: Build
-        run: |
-          echo "=== Building in src/app ==="
-          cd src/app
-          qmake app.pro CONFIG+=release
-          make -j$(sysctl -n hw.ncpu) 2>&1
-          echo "=== Output ==="
-          find . -name "*.app" -o -name "zbwpos" -type f
-
-      - name: Create App Bundle
-        if: success()
-        run: |
-          mkdir -p install/zbwpos.app/Contents/MacOS
-          cp src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ 2>/dev/null || \
-          cp src/app/zbwpos install/zbwpos.app/Contents/MacOS/
-
-          cat > install/zbwpos.app/Contents/Info.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleExecutable</key>
-              <string>zbwpos</string>
-              <key>CFBundleIdentifier</key>
-              <string>com.zbw.pos</string>
-              <key>CFBundleName</key>
-              <string>ZBW POS</string>
-              <key>CFBundleVersion</key>
-              <string>${{ env.APP_VERSION }}</string>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Deploy
-        if: success()
-        run: macdeployqt install/zbwpos.app -no-translations
-
-      - name: Create DMG
-        if: success()
-        run: hdiutil create -volname "ZBW POS" -srcfolder install/zbwpos.app -ov -format UDZW zbwpos-${{ env.APP_VERSION }}-macos.dmg
-
-      - name: Upload Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: zbwpos-*-macos.dmg
-
   build-linux:
     runs-on: ubuntu-22.04
     steps:
@@ -147,39 +36,60 @@ jobs:
 
       - name: Build
         run: |
-          echo "=== Building in src/app ==="
           cd src/app
+          echo "=== qmake ==="
           qmake app.pro CONFIG+=release
-          make -j$(nproc) 2>&1
-          echo "=== Output ==="
-          find . -name "zbwpos" -type f
-
-      - name: Create Package
-        if: success()
-        run: |
-          mkdir -p install/bin
-          cp src/app/zbwpos install/bin/
-          tar -czvf zbwpos-${{ env.APP_VERSION }}-linux-x64.tar.gz -C install bin
+          echo ""
+          echo "=== Makefile check ==="
+          head -50 Makefile || echo "No Makefile"
+          echo ""
+          echo "=== Building with verbose output ==="
+          make -j1 V=1 2>&1 | head -100
+          echo ""
+          echo "=== Build result ==="
+          ls -la
 
       - name: Upload Artifact
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: linux-build
-          path: zbwpos-*-linux-x64.tar.gz
+          name: build-log
+          path: src/app/Makefile
 
-  release:
-    needs: [build-windows, build-macos, build-linux]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+  build-windows:
+    runs-on: windows-latest
     steps:
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
         with:
-          files: artifacts/**/*
-          generate_release_notes: true
+          version: '6.2.4'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          cache: true
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build
+        shell: cmd
+        run: |
+          cd src\app
+          echo "=== qmake ==="
+          qmake app.pro CONFIG+=release
+          echo.
+          echo "=== Makefile check ==="
+          type Makefile 2>nul | findstr /n "^" | findstr "^[1-5]:" || echo "No Makefile or empty"
+          echo.
+          echo "=== Building ==="
+          nmake /NOLOGO 2>&1
+
+      - name: Upload Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-win
+          path: src/app/Makefile*

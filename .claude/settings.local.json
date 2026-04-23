@@ -6,7 +6,9 @@
       "Bash(git config *)",
       "Bash(git add *)",
       "Bash(git commit -m 'feat: project skeleton with Qt5/Qt6 dual build system *)",
-      "Bash(git commit -m 'fix: address code review issues for Chunk 1 *)"
+      "Bash(git commit -m 'fix: address code review issues for Chunk 1 *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)"
     ]
   }
 }

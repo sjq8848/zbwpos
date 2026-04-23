@@ -104,6 +104,68 @@ Page {
             horizontalAlignment: Text.AlignHCenter
         }
 
+        // Separator
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Rectangle {
+                height: 1
+                Layout.fillWidth: true
+                color: "#E0E0E0"
+            }
+            Label {
+                text: "或者"
+                color: "#999999"
+                font.pixelSize: 12
+            }
+            Rectangle {
+                height: 1
+                Layout.fillWidth: true
+                color: "#E0E0E0"
+            }
+        }
+
+        // Demo mode button
+        Button {
+            id: demoButton
+            text: "离线演示模式"
+            Layout.fillWidth: true
+            flat: true
+
+            background: Rectangle {
+                color: demoButton.pressed ? "#E8F5E9" : "#F5F5F5"
+                radius: 4
+                border.color: "#4CAF50"
+                border.width: 1
+            }
+
+            contentItem: Text {
+                text: demoButton.text
+                font.pixelSize: 14
+                color: "#4CAF50"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            onClicked: {
+                if (app && app.enterDemoMode()) {
+                    // Will navigate to cashier page via loginStateChanged signal
+                } else {
+                    errorLabel.text = "进入演示模式失败";
+                    errorLabel.visible = true;
+                }
+            }
+        }
+
+        Label {
+            text: "离线演示模式无需后端服务，使用模拟数据"
+            font.pixelSize: 11
+            color: "#999999"
+            Layout.alignment: Qt.AlignHCenter
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+        }
+
         Item { height: 8 }
 
         Label {

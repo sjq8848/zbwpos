@@ -200,6 +200,99 @@ void Application::logout()
     emit loginStateChanged();
 }
 
+bool Application::enterDemoMode()
+{
+    // Use hardcoded demo values
+    m_tenantId = "demo_tenant";
+    m_storeId = "demo_store";
+    m_userName = "演示收银员";
+    m_isOnline = false; // Offline mode
+
+    m_settings->setTenantId(m_tenantId);
+    m_settings->setStoreId(m_storeId);
+    m_settings->setLastCashierId(1);
+
+    // Propagate to ViewModels
+    if (m_productVM) {
+        m_productVM->setTenantStore(m_tenantId, m_storeId);
+    }
+    if (m_memberVM) {
+        m_memberVM->setTenantStore(m_tenantId);
+    }
+    if (m_cashierVM) {
+        m_cashierVM->setTenantStore(m_tenantId, m_storeId);
+        m_cashierVM->setCashier(1);
+    }
+
+    // Seed demo data
+    seedDemoData();
+
+    m_isLoggedIn = true;
+    emit loginStateChanged();
+    emit onlineStateChanged();
+
+    qDebug() << "Demo mode activated - tenant:" << m_tenantId << "store:" << m_storeId;
+    return true;
+}
+
+void Application::seedDemoData()
+{
+    // Seed categories
+    m_db->execute(
+        "INSERT OR IGNORE INTO categories (id, tenant_id, name, sort_order) VALUES "
+        "(1, ?, '饮料', 1), "
+        "(2, ?, '零食', 2), "
+        "(3, ?, '日用品', 3)",
+        {m_tenantId, m_tenantId, m_tenantId}
+    );
+
+    // Seed products
+    QList<QVariantList> products = {
+        {"6901234567890", "可口可乐500ml", 3.00, 1},
+        {"6901234567891", "百事可乐500ml", 3.00, 1},
+        {"6901234567892", "农夫山泉550ml", 2.00, 1},
+        {"6901234567893", "乐事薯片原味", 8.50, 2},
+        {"6901234567894", "好丽友派", 6.50, 2},
+        {"6901234567895", "舒肤佳香皂", 5.00, 3},
+        {"6901234567896", "清扬洗发水", 35.00, 3},
+        {"6901234567897", "高露洁牙膏", 12.00, 3},
+        {"6901234567898", "红牛功能饮料", 6.00, 1},
+        {"6901234567899", "可口可乐330ml听装", 2.50, 1}
+    };
+
+    for (const auto &p : products) {
+        m_db->execute(
+            "INSERT OR IGNORE INTO products (tenant_id, store_id, barcode, name, price, category_id, unit, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, '件', 1)",
+            {m_tenantId, m_storeId, p[0], p[1], p[2], p[3]}
+        );
+    }
+
+    // Seed members
+    QList<QVariantList> members = {
+        {"M001", "张三", "13800138001", 100, 500.00},
+        {"M002", "李四", "13800138002", 250, 1200.00},
+        {"M003", "王五", "13800138003", 50, 80.00}
+    };
+
+    for (const auto &m : members) {
+        m_db->execute(
+            "INSERT OR IGNORE INTO members (tenant_id, card_no, name, phone, points, balance, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, 1)",
+            {m_tenantId, m[0], m[1], m[2], m[3], m[4]}
+        );
+    }
+
+    // Seed cashier
+    m_db->execute(
+        "INSERT OR IGNORE INTO cashiers (id, tenant_id, username, password_hash, name, role, status) "
+        "VALUES (1, ?, 'admin', 'demo', '演示收银员', 'admin', 1)",
+        {m_tenantId}
+    );
+
+    qDebug() << "Demo data seeded - 3 categories, 10 products, 3 members";
+}
+
 void Application::createServices()
 {
     // Repositories

@@ -47,6 +47,7 @@ public:
 
     Q_INVOKABLE bool login(const QString &serverUrl, const QString &username, const QString &password);
     Q_INVOKABLE void logout();
+    Q_INVOKABLE bool enterDemoMode();
 
 signals:
     void loginStateChanged();
@@ -57,6 +58,7 @@ private:
     void createViewModels();
     void registerQmlTypes(QQmlApplicationEngine *engine);
     void installBarcodeFilter();
+    void seedDemoData();
 
     // Infrastructure
     DatabaseManager *m_db = nullptr;

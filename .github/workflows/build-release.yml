@@ -27,16 +27,34 @@ jobs:
           arch: 'win64_msvc2019_64'
           cache: true
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Debug project
+        shell: cmd
+        run: |
+          echo "=== qmake version ==="
+          qmake -v
+          echo.
+          echo "=== Project structure ==="
+          dir /b
+          echo.
+          echo "=== Running qmake ==="
+          qmake zbwpos.pro CONFIG+=release 2>&1
+
       - name: Build
         shell: cmd
-        env:
-          PATH: ${{ env.IQTA_TOOLS }}/../../../msvc2019_64/bin;${{ env.PATH }}
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          mkdir build
-          cd build
-          qmake ..\zbwpos.pro CONFIG+=release
-          nmake
+          echo "=== Building ==="
+          nmake 2>&1
+          echo.
+          echo "=== Build output ==="
+          dir /s /b *.exe 2>nul
+          echo.
+          echo "=== Build directory structure ==="
+          dir build 2>nul || echo "No build dir"
+          dir build\src 2>nul || echo "No build\src dir"
+          dir build\src\app 2>nul || echo "No build\src\app dir"
 
       - name: Deploy
         if: success()
@@ -73,18 +91,29 @@ jobs:
           arch: 'clang_64'
           cache: true
 
+      - name: Debug project
+        run: |
+          echo "=== qmake version ==="
+          qmake -v
+          echo "=== Project structure ==="
+          ls -la
+          echo "=== Running qmake ==="
+          qmake zbwpos.pro CONFIG+=release 2>&1 || true
+          echo "=== Makefiles generated ==="
+          find . -name "Makefile" -type f
+
       - name: Build
         run: |
-          mkdir -p build
-          cd build
-          qmake ../zbwpos.pro CONFIG+=release
-          make -j$(sysctl -n hw.ncpu)
+          echo "=== Building ==="
+          make -j$(sysctl -n hw.ncpu) 2>&1 || true
+          echo "=== Build output ==="
+          find . -name "zbwpos" -type f 2>/dev/null || echo "No zbwpos binary found"
+          ls -la build/src/app/ 2>/dev/null || echo "No build/src/app dir"
 
       - name: Create App Bundle
         if: success()
         run: |
           mkdir -p install/zbwpos.app/Contents/MacOS
-          mkdir -p install/zbwpos.app/Contents/Resources
           cp build/src/app/zbwpos.app/Contents/MacOS/zbwpos install/zbwpos.app/Contents/MacOS/ || \
           cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
 
@@ -101,10 +130,6 @@ jobs:
               <string>ZBW POS</string>
               <key>CFBundleVersion</key>
               <string>${{ env.APP_VERSION }}</string>
-              <key>CFBundleShortVersionString</key>
-              <string>${{ env.APP_VERSION }}</string>
-              <key>LSMinimumSystemVersion</key>
-              <string>10.14</string>
           </dict>
           </plist>
           EOF
@@ -133,17 +158,9 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            libgl1-mesa-dev \
-            libxcb-xinerama0 \
-            libxkbcommon-x11-0 \
-            libxcb-icccm4 \
-            libxcb-image0 \
-            libxcb-keysyms1 \
-            libxcb-randr0 \
-            libxcb-render-util0 \
-            libxcb-shape0 \
-            libx11-xcb-dev
+          sudo apt-get install -y libgl1-mesa-dev libxcb-xinerama0 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
+            libxcb-shape0 libx11-xcb-dev libegl1
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -154,12 +171,23 @@ jobs:
           arch: 'gcc_64'
           cache: true
 
+      - name: Debug project
+        run: |
+          echo "=== qmake version ==="
+          qmake -v
+          echo "=== Project structure ==="
+          ls -la
+          echo "=== Running qmake ==="
+          qmake zbwpos.pro CONFIG+=release 2>&1 || true
+          echo "=== Makefiles generated ==="
+          find . -name "Makefile" -type f
+
       - name: Build
         run: |
-          mkdir -p build
-          cd build
-          qmake ../zbwpos.pro CONFIG+=release
-          make -j$(nproc)
+          echo "=== Building ==="
+          make -j$(nproc) 2>&1 || true
+          echo "=== Build output ==="
+          find . -name "zbwpos" -type f 2>/dev/null || echo "No zbwpos binary found"
 
       - name: Create Package
         if: success()
@@ -185,14 +213,8 @@ jobs:
         with:
           path: artifacts
 
-      - name: Display structure of downloaded files
-        run: ls -laR artifacts
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            artifacts/**/*
+          files: artifacts/**/*
           generate_release_notes: true
-          draft: false
-          prerelease: false

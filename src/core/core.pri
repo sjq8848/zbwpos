@@ -1,5 +1,10 @@
 HEADERS += \
     $$PWD/QtCompat.h \
-    $$PWD/Common.h
+    $$PWD/Common.h \
+    $$PWD/database/DatabaseManager.h \
+    $$PWD/database/Migration.h \
+    $$PWD/database/Models.h
 
-SOURCES +=
+SOURCES += \
+    $$PWD/database/DatabaseManager.cpp \
+    $$PWD/database/Migration.cpp

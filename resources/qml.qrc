@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file alias="ProductManagePage.qml">../src/product/qml/ProductManagePage.qml</file>
+        <file alias="MemberPage.qml">../src/member/qml/MemberPage.qml</file>
     </qresource>
 </RCC>

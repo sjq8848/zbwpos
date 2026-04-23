@@ -1,0 +1,239 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: false
+
+env:
+  APP_NAME: zbwpos
+  APP_VERSION: ${{ github.event.inputs.version || '1.0.0' }}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          cache: true
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../zbwpos.pro -spec win32-msvc CONFIG+=release
+          nmake
+
+      - name: Deploy
+        run: |
+          mkdir -p install/bin
+          cp build/src/app/release/zbwpos.exe install/bin/
+          cd install/bin
+          windeployqt --release --no-translations zbwpos.exe
+
+      - name: Create Installer
+        run: |
+          choco install nsis -y
+          makensis /DVERSION=${{ env.APP_VERSION }} scripts/installer-windows.nsi
+        continue-on-error: true
+
+      - name: Create ZIP
+        run: |
+          cd install
+          7z a -tzip ../zbwpos-${{ env.APP_VERSION }}-windows-x64.zip bin/*
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            package/*.exe
+            zbwpos-*-windows-x64.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+          cache: true
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../zbwpos.pro -spec macx-clang CONFIG+=release
+          make -j$(sysctl -n hw.ncpu)
+
+      - name: Create App Bundle
+        run: |
+          mkdir -p install/zbwpos.app/Contents/MacOS
+          mkdir -p install/zbwpos.app/Contents/Resources
+          cp build/src/app/zbwpos install/zbwpos.app/Contents/MacOS/
+
+          cat > install/zbwpos.app/Contents/Info.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>zbwpos</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.zbw.pos</string>
+              <key>CFBundleName</key>
+              <string>ZBW POS</string>
+              <key>CFBundleVersion</key>
+              <string>${{ env.APP_VERSION }}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${{ env.APP_VERSION }}</string>
+              <key>LSMinimumSystemVersion</key>
+              <string>10.14</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Deploy
+        run: |
+          macdeployqt install/zbwpos.app -no-translations
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "ZBW POS" -srcfolder install/zbwpos.app -ov -format UDZW zbwpos-${{ env.APP_VERSION }}-macos.dmg
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: zbwpos-*-macos.dmg
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qt5-default \
+            qtbase5-dev \
+            qtchooser \
+            qt5-qmake \
+            qtbase5-dev-tools \
+            libqt5sql5-sqlite \
+            libqt5network5 \
+            libgl1-mesa-dev
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../zbwpos.pro -spec linux-g++ CONFIG+=release
+          make -j$(nproc)
+
+      - name: Create Package
+        run: |
+          mkdir -p install/bin
+          cp build/src/app/zbwpos install/bin/
+          tar -czvf zbwpos-${{ env.APP_VERSION }}-linux-x64.tar.gz -C install bin
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: zbwpos-*-linux-x64.tar.gz
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Qt for Android
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '5.15.2'
+          host: 'linux'
+          target: 'android'
+          arch: 'android_arm64_v8a'
+          cache: true
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          qmake ../zbwpos.pro -spec android-clang CONFIG+=release ANDROID_ABIS="arm64-v8a"
+          make -j$(nproc) qmake_all
+          make -j$(nproc)
+
+      - name: Build APK
+        run: |
+          cd build
+          make INSTALL_ROOT=../android-build install
+          cd ../android-build
+          ./gradlew assembleRelease
+        continue-on-error: true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: |
+            build/android-build/build/outputs/apk/**/*.apk
+            **/*.apk
+        continue-on-error: true
+
+  release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -laR artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/**/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false

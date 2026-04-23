@@ -21,7 +21,8 @@ HEADERS += \
     $$PWD/hardware/HardwareManager.h \
     $$PWD/hardware/DeviceFactory.h \
     $$PWD/hardware/BarcodeFilter.h \
-    $$PWD/hardware/PrinterEscPos.h
+    $$PWD/hardware/PrinterEscPos.h \
+    $$PWD/settings/AppSettings.h
 
 SOURCES += \
     $$PWD/database/DatabaseManager.cpp \
@@ -37,4 +38,5 @@ SOURCES += \
     $$PWD/hardware/HardwareManager.cpp \
     $$PWD/hardware/DeviceFactory.cpp \
     $$PWD/hardware/BarcodeFilter.cpp \
-    $$PWD/hardware/PrinterEscPos.cpp
+    $$PWD/hardware/PrinterEscPos.cpp \
+    $$PWD/settings/AppSettings.cpp

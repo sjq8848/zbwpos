@@ -134,3 +134,8 @@ void ProductVM::loadAll() {
     m_isLoading = false;
     emit isLoadingChanged();
 }
+
+void ProductVM::setTenantStore(const QString &tenantId, const QString &storeId) {
+    m_tenantId = tenantId;
+    m_storeId = storeId;
+}

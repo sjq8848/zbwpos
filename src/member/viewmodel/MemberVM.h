@@ -42,6 +42,8 @@ public:
     Q_INVOKABLE void clearCurrentMember();
     Q_INVOKABLE void loadAll();
 
+    void setTenantStore(const QString &tenantId);
+
 signals:
     void keywordChanged();
     void isLoadingChanged();

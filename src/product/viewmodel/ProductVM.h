@@ -41,6 +41,8 @@ public:
     Q_INVOKABLE void selectCategory(int categoryId);
     Q_INVOKABLE void loadAll();
 
+    void setTenantStore(const QString &tenantId, const QString &storeId);
+
 signals:
     void keywordChanged();
     void isLoadingChanged();

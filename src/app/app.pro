@@ -10,8 +10,16 @@ include(../../android/android.pri)
 TARGET = zbwpos
 TEMPLATE = app
 
+HEADERS += \
+    Application.h \
+    MainWindow.h \
+    NavigationManager.h
+
 SOURCES += \
-    main.cpp
+    main.cpp \
+    Application.cpp \
+    MainWindow.cpp \
+    NavigationManager.cpp
 
 RESOURCES += \
     $$PWD/../../resources/qml.qrc

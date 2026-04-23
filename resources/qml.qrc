@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file alias="LoginPage.qml">../src/app/qml/LoginPage.qml</file>
+        <file alias="AppNavigation.qml">../src/app/qml/AppNavigation.qml</file>
         <file alias="ProductManagePage.qml">../src/product/qml/ProductManagePage.qml</file>
         <file alias="MemberPage.qml">../src/member/qml/MemberPage.qml</file>
         <file alias="CashierPage.qml">../src/cashier/qml/CashierPage.qml</file>

@@ -1,7 +1,9 @@
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QQuickStyle>
 #include "core/QtCompat.h"
+#include "app/Application.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +18,12 @@ int main(int argc, char *argv[])
     QQuickStyle::setStyle("Material");
 
     QQmlApplicationEngine engine;
+
+    Application zbwApp;
+    if (!zbwApp.initialize(&engine)) {
+        return -1;
+    }
+
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     if (engine.rootObjects().isEmpty())

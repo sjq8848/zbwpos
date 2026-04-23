@@ -188,3 +188,8 @@ void MemberVM::loadAll()
     m_isLoading = false;
     emit isLoadingChanged();
 }
+
+void MemberVM::setTenantStore(const QString &tenantId)
+{
+    m_tenantId = tenantId;
+}
